@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">ComputerSim</string>
     <string name="action_settings">Settings</string>
+    <string name="program_description">
+        Program to run:\n
+        def	print_tenten\n
+        \tprint(multiply(101, 10))\n
+        end\n
+        \n
+        print(1009)\n
+        print_tenten()
+    </string>
 </resources>
