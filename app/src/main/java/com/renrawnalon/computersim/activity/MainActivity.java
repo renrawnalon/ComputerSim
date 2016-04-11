@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.renrawnalon.computersim.R;
@@ -63,16 +64,64 @@ public class MainActivity extends AppCompatActivity implements PrintHandler {
     @Override
     // Print value to screen by appending it to the TextView
     public void print(String value) {
-        TextView textView = (TextView) findViewById(R.id.textView);
-        String text = (String) textView.getText();
-        text += value;
-        text += "\n";
-        textView.setText(text);
+//        TextView textView = (TextView) findViewById(R.id.textView);
+//        String text = (String) textView.getText();
+//        text += value;
+//        text += "\n";
+//        textView.setText(text);
     }
     //endregion
 
     //region Action Methods
-    public void onClickExecute(View view) {
+    public void onClickNumberButton(View view) {
+        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
+        String text = (String) inputTextView.getText();
+        text += ((Button)view).getText();
+        inputTextView.setText(text);
+    }
+
+    public void onClickOperatorButton(View view) {
+        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
+        String inputPrefix = getString(R.string.prefixInput);
+        String text = (String) inputTextView.getText();
+
+        // Operator cannot be the first input.
+        if (text.length() <= inputPrefix.length()) {
+            return;
+        }
+
+        // If last input was an operator, remove it and replace it with the new operator.
+        char lastChar = text.charAt(text.length() - 1);
+        if (!Character.toString(lastChar).matches("[0-9]")) {
+            text = text.substring(0, text.length() - 3);
+        }
+
+        text += " " + ((Button) view).getText() + " ";
+        inputTextView.setText(text);
+    }
+
+    public void onClickDeleteButton(View view) {
+        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
+        String inputPrefix = getString(R.string.prefixInput);
+        String text = (String) inputTextView.getText();
+
+        // Operator cannot be the first input.
+        if (text.length() <= inputPrefix.length()) {
+            return;
+        }
+
+        // If last input was an operator, remove it and replace it with the new operator.
+        char lastChar = text.charAt(text.length() - 1);
+        if (Character.toString(lastChar).matches("[0-9]")) {
+            text = text.substring(0, text.length() - 1);
+        } else {
+            text = text.substring(0, text.length() - 3);
+        }
+
+        inputTextView.setText(text);
+    }
+
+    public void onClickSolveButton(View view) {
         try {
             runProgram();
         } catch (InvalidArgumentsException e) {
