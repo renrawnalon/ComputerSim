@@ -1,18 +1,18 @@
 # ComputerSim
-A simple android project that simulates a computer running a program.
+A simple android project that simulates a computer designed to run integer arithmatic.
 
 ## Assumptions
-Since the only direct interaction with this app is the button event that executes the program, and not the input to the program itself, it is assumed that the program will always execute with valid input. Therefore, error handling regarding the validity of the program input is generally ignored. 
+This simulator only operates on Integers by design and the remainder of any uneven division is rounded off. This could be easily abstracted to  work with floating point values as mentions in the Improvments section.
 
-I did add checks to make sure that `Computer` is properly initialized with at least 100 but no more than 10,000 address slots. This can be verified by changing the line of code that instanciates `Computer` in `MainActivity` to take a number outside of this range. In this case, an error message will be printed to the screen instead of the expected output.
 
 ## Improvements.
 
-### Error Handling
-As mentioned above, error handling is the first major improvement that coud be done to increase safety and usabilitiy of this app. However, even though the possible instructions of the simulated computer are very limited, implementing this error handling would be no small task. If done properly, it would involve generating compiler to assure validity around all edge cases for possible inputs.
+### Calculation Saving
+Since the computer is capable of executing functions it would be interesting to allow the user to save calculations. These could be registered in the computer as functions that could be called with a new interface that allows the user to access their saved calculations.
+
+### Operating on floating point values
+Currently, the system only allows interaction with integers by design. This makes the division function of the calculator very limited. Ideally, the computer should take Doubles as input in order to do more meaningful computation.
 
 ### Unit Tests
-This would be a way to ensure that the error handling mentioned above works in all cases, and would be necessary to ensure that future development of this app doesn't introduce new bugs or break old code.
+Unit tests will be implemented in a future release.
 
-### UI Improvements
-Ideally, this app would contain a user interface that allows for the user to write "code" that `Computer` would execute. This could be as simple as giving the use the option of creating functions and doing some combination of multiplying numbers and printing things to the screen. This UI could be restrictive to ensure to a maximum degree that the program entered by the user is always valid, or it could be more freeform, which would require more rigorous checks and error handling.
