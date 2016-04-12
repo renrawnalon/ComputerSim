@@ -20,12 +20,20 @@ import com.renrawnalon.computersim.computer.PrintHandler;
 public class MainActivity extends AppCompatActivity implements PrintHandler {
 
     //region Constants
-    private static final int PRINT_TENTEN_BEGIN = 50;
+    private static final int PLUS_BEGIN = 50;
+    private static final int MINUS_BEGIN = 53;
+    private static final int MULTIPLY_BEGIN = 56;
+    private static final int DIVIDE_BEGIN = 59;
     private static final int MAIN_BEGIN = 0;
     //endregion
 
     //region Variables
     private Computer computer;
+    private String lhs = "";
+    private String rhs = "";
+    private String result = "";
+    private String operator = "";
+
     //endregion
 
     //region Lifecycle
@@ -35,6 +43,12 @@ public class MainActivity extends AppCompatActivity implements PrintHandler {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        try {
+            initializeComputer();
+        } catch (InvalidArgumentsException e) {
+            print("Could not initialize computer: " + e.getLocalizedMessage());
+        }
     }
 
     @Override
@@ -64,64 +78,88 @@ public class MainActivity extends AppCompatActivity implements PrintHandler {
     @Override
     // Print value to screen by appending it to the TextView
     public void print(String value) {
-//        TextView textView = (TextView) findViewById(R.id.textView);
-//        String text = (String) textView.getText();
-//        text += value;
-//        text += "\n";
-//        textView.setText(text);
+        result = value;
+        TextView textView = (TextView) findViewById(R.id.outputTextView);
+        String outputPrefix = getString(R.string.prefixOutput);
+        String output = new StringBuilder()
+                .append(outputPrefix)
+                .append(" ")
+                .append(result).toString();
+        textView.setText(output);
     }
     //endregion
 
     //region Action Methods
     public void onClickNumberButton(View view) {
-        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
-        String text = (String) inputTextView.getText();
-        text += ((Button)view).getText();
-        inputTextView.setText(text);
+        String input = ((Button)view).getText().toString();
+        if (!result.isEmpty()) {
+            lhs = "";
+            rhs = "";
+            operator = "";
+
+            print("");
+        }
+
+        if (operator.isEmpty()) {
+            try  {
+                String newLhs = lhs + input;
+                Integer.valueOf(newLhs);
+                lhs = newLhs;
+            } catch (NumberFormatException e) {
+            }
+        } else {
+            try  {
+                String newRhs = rhs + input;
+                Integer.valueOf(newRhs);
+                rhs = newRhs;
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        printInput();
     }
 
     public void onClickOperatorButton(View view) {
-        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
-        String inputPrefix = getString(R.string.prefixInput);
-        String text = (String) inputTextView.getText();
+        String input = ((Button)view).getText().toString();
+        if (!result.isEmpty()) {
+            try  {
+                Integer.valueOf(result);
+                lhs = result;
+            } catch (NumberFormatException e){
+                lhs = "";
+            }
+            rhs = "";
+            operator = "";
 
-        // Operator cannot be the first input.
-        if (text.length() <= inputPrefix.length()) {
-            return;
+            print("");
         }
 
-        // If last input was an operator, remove it and replace it with the new operator.
-        char lastChar = text.charAt(text.length() - 1);
-        if (!Character.toString(lastChar).matches("[0-9]")) {
-            text = text.substring(0, text.length() - 3);
+        if (!lhs.isEmpty()) {
+            operator = input;
         }
 
-        text += " " + ((Button) view).getText() + " ";
-        inputTextView.setText(text);
+        printInput();
     }
 
+    // Delete input from right to left>
     public void onClickDeleteButton(View view) {
-        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
-        String inputPrefix = getString(R.string.prefixInput);
-        String text = (String) inputTextView.getText();
+        if (!rhs.isEmpty()) {
+            rhs = rhs.substring(0, rhs.length() - 1);
+        } else if (!operator.isEmpty()) {
+            operator = "";
+        } else if (!lhs.isEmpty()) {
+            lhs = lhs.substring(0, lhs.length() - 1);
+        }
 
-        // Operator cannot be the first input.
-        if (text.length() <= inputPrefix.length()) {
+        printInput();
+    }
+
+    // Execute calculation with given input.
+    public void onClickSolveButton(View view) {
+        if (lhs == null || (rhs != null && operator == null)) {
             return;
         }
 
-        // If last input was an operator, remove it and replace it with the new operator.
-        char lastChar = text.charAt(text.length() - 1);
-        if (Character.toString(lastChar).matches("[0-9]")) {
-            text = text.substring(0, text.length() - 1);
-        } else {
-            text = text.substring(0, text.length() - 3);
-        }
-
-        inputTextView.setText(text);
-    }
-
-    public void onClickSolveButton(View view) {
         try {
             runProgram();
         } catch (InvalidArgumentsException e) {
@@ -131,34 +169,124 @@ public class MainActivity extends AppCompatActivity implements PrintHandler {
     //endregion
 
     //region Private Methods
-    private void runProgram() throws InvalidArgumentsException {
-        // Create new computer with a stack of 100 addresses
-        computer = new Computer(100, this);
 
-        // Instructions for the print_tenten function
-        computer.setAddress(PRINT_TENTEN_BEGIN)
+    private void printInput() {
+        StringBuilder sb = new StringBuilder()
+                .append(getString(R.string.prefixInput))
+                .append(" ")
+                .append(lhs);
+        if (operator != null) {
+            sb.append(" ").append(operator);
+        }
+        if (rhs != null) {
+            sb.append(" ").append(rhs);
+        }
+
+        TextView inputTextView = (TextView) findViewById(R.id.inputTextView);
+        inputTextView.setText(sb.toString());
+    }
+
+    private void initializeComputer() throws InvalidArgumentsException {
+        // Create new computer with a stack of 1000 addresses
+        computer = new Computer(1000, this);
+
+        // Instructions for the add function
+        computer.setAddress(PLUS_BEGIN)
+                .insert(new Command(Instruction.PLUS))
+                .insert(new Command(Instruction.PRINT))
+                .insert(new Command(Instruction.RET));
+
+        // Instructions for the subtract function
+        computer.setAddress(MINUS_BEGIN)
+                .insert(new Command(Instruction.MINUS))
+                .insert(new Command(Instruction.PRINT))
+                .insert(new Command(Instruction.RET));
+
+        // Instructions for the multiply function
+        computer.setAddress(MULTIPLY_BEGIN)
                 .insert(new Command(Instruction.MULT))
                 .insert(new Command(Instruction.PRINT))
                 .insert(new Command(Instruction.RET));
 
-        // The start of the main function
-        computer.setAddress(MAIN_BEGIN)
-                .insert(new Command(Instruction.PUSH, 1009))
+        // Instructions for the divide function
+        computer.setAddress(DIVIDE_BEGIN)
+                .insert(new Command(Instruction.DIV))
+                .insert(new Command(Instruction.PRINT))
+                .insert(new Command(Instruction.RET));
+    }
+
+    private void printSingleOutput() throws InvalidArgumentsException {
+        // Set initial address of program
+        computer.setAddress(MAIN_BEGIN);
+
+        // Print input value
+        computer.insert(new Command(Instruction.PUSH, lhs))
                 .insert(new Command(Instruction.PRINT));
-
-        // Return address for when print_tenten function finishes
-        computer.insert(new Command(Instruction.PUSH, 6));
-
-        // Setup arguments and call print_tenten
-        computer.insert(new Command(Instruction.PUSH, 101))
-                .insert(new Command(Instruction.PUSH, 10))
-                .insert(new Command(Instruction.CALL, PRINT_TENTEN_BEGIN));
 
         // Stop the program
         computer.insert(new Command(Instruction.STOP));
 
         // Execute
         computer.setAddress(MAIN_BEGIN).execute();
+    }
+
+    private void printOperationOutput() throws InvalidArgumentsException {
+        // Set initial address of program
+        computer.setAddress(MAIN_BEGIN);
+
+        // Print input value
+        // Setup arguments and call print_tenten
+        computer.insert(new Command(Instruction.PUSH, 4))
+                .insert(new Command(Instruction.PUSH, lhs))
+                .insert(new Command(Instruction.PUSH, rhs));
+
+        switch (operator) {
+            case "+":
+                computer.insert(new Command(Instruction.CALL, PLUS_BEGIN));
+                break;
+            case "-":
+                computer.insert(new Command(Instruction.CALL, MINUS_BEGIN));
+                break;
+            case "*":
+                computer.insert(new Command(Instruction.CALL, MULTIPLY_BEGIN));
+                break;
+            case "/":
+                computer.insert(new Command(Instruction.CALL, DIVIDE_BEGIN));
+                break;
+        }
+
+        // Stop the program
+        computer.insert(new Command(Instruction.STOP));
+
+        // Execute
+        computer.setAddress(MAIN_BEGIN).execute();
+    }
+
+    private void printTenTen() throws InvalidArgumentsException {
+        // The start of the main function
+        computer.setAddress(MAIN_BEGIN);
+
+        // Setup arguments and call print_tenten
+        computer.insert(new Command(Instruction.PUSH, 4))
+                .insert(new Command(Instruction.PUSH, 101))
+                .insert(new Command(Instruction.PUSH, 10))
+                .insert(new Command(Instruction.CALL, MULTIPLY_BEGIN));
+
+        // Stop the program
+        computer.insert(new Command(Instruction.STOP));
+
+        // Execute
+        computer.setAddress(MAIN_BEGIN).execute();
+    }
+
+    private void runProgram() throws InvalidArgumentsException {
+        if (!lhs.isEmpty() && ! rhs.isEmpty()) {
+            printOperationOutput();
+        } else if (!lhs.isEmpty() && operator.isEmpty()) {
+            printSingleOutput();
+        } else {
+            printTenTen();
+        }
     }
     //endregion
 }

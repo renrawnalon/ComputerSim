@@ -68,8 +68,17 @@ public class Computer {
             Command command = stack.valueAt(programCounter);
 
             switch (command.instruction) {
+                case PLUS:
+                    executePlus();
+                    break;
+                case MINUS:
+                    executeMinus();
+                    break;
                 case MULT:
                     executeMult();
+                    break;
+                case DIV:
+                    executeDiv();
                     break;
                 case CALL:
                     executeCall(command.value);
@@ -92,11 +101,57 @@ public class Computer {
     //endregion
 
     //region Instruction execution
+    // Pop the 2 arguments from the stack, add them and push the result back to the stack
+    private void executePlus() {
+        Integer value2 = stack.pop().value;
+        Integer value1 = stack.pop().value;
+
+        if (MathHelper.willAdditionOverflow(value1, value2)) {
+            stack.push(new Command("OVERFLOW ERR"));
+        } else {
+            stack.push(new Command(null, value1 + value2));
+        }
+
+        programCounter++;
+    }
+
+    // Pop the 2 arguments from the stack, subtract them and push the result back to the stack
+    private void executeMinus() {
+        Integer value2 = stack.pop().value;
+        Integer value1 = stack.pop().value;
+
+        if (MathHelper.willAdditionOverflow(value1, -value2)) {
+            stack.push(new Command("OVERFLOW ERR"));
+        } else {
+            stack.push(new Command(null, value1 - value2));
+        }
+
+        programCounter++;
+    }
+
     // Pop the 2 arguments from the stack, multiply them and push the result back to the stack
     private void executeMult() {
-        Integer value1 = stack.pop().value;
         Integer value2 = stack.pop().value;
-        stack.push(new Command(null, value1 * value2));
+        Integer value1 = stack.pop().value;
+
+        if (MathHelper.willMultiplicationOverflow(value1, value2)) {
+            stack.push(new Command("OVERFLOW ERR"));
+        } else {
+            stack.push(new Command(null, value1 * value2));
+        }
+
+        programCounter++;
+    }
+
+    // Pop the 2 arguments from the stack, divide them and push the result back to the stack
+    private void executeDiv() {
+        Integer value2 = stack.pop().value;
+        Integer value1 = stack.pop().value;
+        if (value2 == 0) {
+            stack.push(new Command("DIV BY 0 ERR"));
+        } else {
+            stack.push(new Command(null, value1 / value2));
+        }
 
         programCounter++;
     }
@@ -120,7 +175,11 @@ public class Computer {
     // Pop value from stack and print it
     private void executePrint() {
         Command command = stack.pop();
-        printHandler.print(command.value.toString());
+        if (command.error == null) {
+            printHandler.print(command.value.toString());
+        } else {
+            printHandler.print(command.error);
+        }
 
         programCounter++;
     }
@@ -132,5 +191,6 @@ public class Computer {
         programCounter++;
     }
     //endregion
+
 }
 
