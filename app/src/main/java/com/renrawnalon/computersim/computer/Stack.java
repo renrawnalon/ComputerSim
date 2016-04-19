@@ -5,56 +5,56 @@ import java.util.Arrays;
 
 public class Stack {
 
-    private Command[] stack;
+    private Command[] commands;
     private int stackPointer = 0;
 
     public Stack(int size) {
-        stack = new Command[size];
+        commands = new Command[size];
     }
 
     public void insert(Command command, int address) {
-        stack[address] = command;
+        commands[address] = command;
 
         if (stackPointer < address + 1) {
             stackPointer = address + 1;
         }
     }
 
-    // Push value onto stack
+    // Push value onto commands
     public void push(Command command) {
-        stack[stackPointer] = command;
+        commands[stackPointer] = command;
         stackPointer++;
     }
 
-    // Pop value off of stack
+    // Pop value off of commands
     public Command pop() {
         stackPointer--;
-        Command command = stack[stackPointer];
-        stack[stackPointer] = null;
+        Command command = commands[stackPointer];
+        commands[stackPointer] = null;
 
         return command;
     }
 
-    // Peek value on top of stack
+    // Peek value on top of commands
     public Command peek() {
-        return stack[stackPointer - 1];
+        return commands[stackPointer - 1];
     }
 
     public Command valueAt(int address) {
-        return stack[address];
+        return commands[address];
     }
 
-    // Print stack
+    // Print commands
     public void print() {
-        for (Command command: stack) {
+        for (Command command: commands) {
             if (command != null) {
                 if (command.value != null) {
                     Log.i("debug", new StringBuilder()
-                            .append("Address: ").append(Arrays.asList(stack).indexOf(command))
+                            .append("Address: ").append(Arrays.asList(commands).indexOf(command))
                             .append(", Command: ").append(command.instruction).append(" ").append(command.value).toString());
                 } else {
                     Log.i("debug", new StringBuilder()
-                            .append("Address: ").append(Arrays.asList(stack).indexOf(command))
+                            .append("Address: ").append(Arrays.asList(commands).indexOf(command))
                             .append(", Command: ").append(command.instruction).toString());
                 }
             }
